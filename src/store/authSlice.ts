@@ -71,8 +71,8 @@ const authSlice = createSlice({
 		},
 		syncFromNextAuth: (
 			state,
-			action: PayloadAction<{ 
-				user: AuthUser | null; 
+			action: PayloadAction<{
+				user: AuthUser | null;
 				isLoggedIn: boolean;
 				error?: string | null;
 			}>,
@@ -83,7 +83,7 @@ const authSlice = createSlice({
 			state.isLoading = false;
 			state.error = error || null;
 			state.lastSync = Date.now();
-			
+
 			if (isLoggedIn && user) {
 				// Update session expiry when syncing logged in user
 				state.sessionExpiry = Date.now() + (24 * 60 * 60 * 1000);

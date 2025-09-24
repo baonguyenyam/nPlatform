@@ -26,21 +26,21 @@ const PROTECTED_ROUTES = {
 		permissions: ["VIEW_ANALYTICS"] as string[],
 		requireAll: false,
 	},
-	
+
 	// Moderator routes
 	"/moderator": {
 		roles: ["ADMIN", "MODERATOR"] as UserRole[],
 		permissions: [] as string[],
 		requireAll: false,
 	},
-	
+
 	// User dashboard
 	"/dashboard": {
 		roles: ["USER", "MODERATOR", "ADMIN"] as UserRole[],
 		permissions: [] as string[],
 		requireAll: false,
 	},
-	
+
 	// API routes
 	"/api/admin": {
 		roles: ["ADMIN"] as UserRole[],
@@ -108,10 +108,10 @@ function checkPermissions(
 
 	// Check roles
 	const hasRequiredRole = requiredRoles.length === 0 || requiredRoles.includes(userRole);
-	
+
 	// Check permissions
-	const hasRequiredPermissions = requiredPermissions.length === 0 || 
-		(requireAll 
+	const hasRequiredPermissions = requiredPermissions.length === 0 ||
+		(requireAll
 			? requiredPermissions.every(perm => userPermissions.includes(perm))
 			: requiredPermissions.some(perm => userPermissions.includes(perm))
 		);
@@ -138,7 +138,7 @@ export async function withAuthorization(
 	try {
 		const session = await auth();
 		const { pathname } = request.nextUrl;
-		
+
 		// Check if route is public
 		if (matchesPattern(pathname, PUBLIC_ROUTES)) {
 			return { authorized: true };
@@ -304,7 +304,7 @@ export function hasPermission(
  */
 export function createPermissionChecker(routePattern: string) {
 	const requirements = PROTECTED_ROUTES[routePattern as keyof typeof PROTECTED_ROUTES];
-	
+
 	if (!requirements) {
 		return (user: any) => true; // Allow access if no requirements defined
 	}

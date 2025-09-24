@@ -56,8 +56,8 @@ export const getCurrentUserWithData = async () => {
 		let permissions: string[] = [];
 		if (user.permissions) {
 			try {
-				permissions = typeof user.permissions === 'string' 
-					? JSON.parse(user.permissions) 
+				permissions = typeof user.permissions === 'string'
+					? JSON.parse(user.permissions)
 					: user.permissions;
 			} catch (error) {
 				console.warn("Failed to parse user permissions:", error);
@@ -202,8 +202,8 @@ export const createUserToken = async (
 	let permissions: string[] = [];
 	if (user.permissions) {
 		try {
-			permissions = typeof user.permissions === 'string' 
-				? JSON.parse(user.permissions) 
+			permissions = typeof user.permissions === 'string'
+				? JSON.parse(user.permissions)
 				: user.permissions;
 		} catch (error) {
 			permissions = [];
@@ -266,7 +266,7 @@ export const getUserFromApiKey = async (apiKey: string) => {
  */
 export const authenticateApiRequest = async (request: Request) => {
 	const authHeader = request.headers.get("authorization");
-	
+
 	if (!authHeader) {
 		throw new Error("Authorization header required");
 	}
@@ -303,7 +303,7 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 export const rateLimit = (config: RateLimitConfig) => {
 	return async (request: Request): Promise<boolean> => {
 		const now = Date.now();
-		const key = config.keyGenerator 
+		const key = config.keyGenerator
 			? config.keyGenerator(request)
 			: request.headers.get("x-forwarded-for") || "unknown";
 
@@ -409,7 +409,7 @@ export const logAuthEvent = async (
 			metadata,
 			timestamp: new Date().toISOString(),
 		});
-		
+
 		// Example: Store in database
 		// await db.auditLog.create({
 		//   data: {
