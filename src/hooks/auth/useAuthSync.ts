@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 import { useAppDispatch, useAppSelector } from "@/store";
-import { 
-	selectAuth, 
+import {
+	selectAuth,
 	setAuthLoading,
-	syncFromNextAuth, 
-	type AuthUser 
+	syncFromNextAuth,
+	type AuthUser
 } from "@/store/authSlice";
 
 /**
@@ -51,9 +51,9 @@ export const useAuthSync = () => {
 			(isLoggedIn && authState.user?.role !== user?.role);
 
 		if (shouldSync) {
-			dispatch(syncFromNextAuth({ 
-				user, 
-				isLoggedIn 
+			dispatch(syncFromNextAuth({
+				user,
+				isLoggedIn
 			}));
 		}
 	}, [

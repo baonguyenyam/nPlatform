@@ -28,13 +28,13 @@ const cleanupAttempts = () => {
 const isRateLimited = (identifier: string): boolean => {
 	const attempts = loginAttempts.get(identifier);
 	if (!attempts) return false;
-	
+
 	const now = Date.now();
 	if (now - attempts.lastAttempt > LOCKOUT_DURATION) {
 		loginAttempts.delete(identifier);
 		return false;
 	}
-	
+
 	return attempts.attempts >= MAX_ATTEMPTS;
 };
 
@@ -44,10 +44,10 @@ const recordAttempt = (identifier: string, success: boolean) => {
 		loginAttempts.delete(identifier);
 		return;
 	}
-	
+
 	const now = Date.now();
 	const attempts = loginAttempts.get(identifier);
-	
+
 	if (attempts) {
 		attempts.attempts += 1;
 		attempts.lastAttempt = now;
@@ -61,11 +61,11 @@ export async function POST(req: Request) {
 	try {
 		// Clean up old attempts
 		cleanupAttempts();
-		
+
 		// Get client identifier (IP address)
 		const forwardedFor = req.headers.get('x-forwarded-for');
 		const clientIP = forwardedFor ? forwardedFor.split(',')[0] : 'unknown';
-		
+
 		// Check rate limiting
 		if (isRateLimited(clientIP)) {
 			console.warn(`Rate limited login attempt from IP: ${clientIP}`);
@@ -78,11 +78,11 @@ export async function POST(req: Request) {
 		// Parse and validate request body
 		const body = await req.json();
 		const validationResult = SignInSchema.safeParse(body);
-		
+
 		if (!validationResult.success) {
 			recordAttempt(clientIP, false);
 			return Response.json(
-				{ 
+				{
 					message: "Invalid input data",
 					errors: validationResult.error.errors.map(err => ({
 						field: err.path.join('.'),
@@ -105,10 +105,10 @@ export async function POST(req: Request) {
 		if (!dbUser || !dbUser.password) {
 			recordAttempt(clientIP, false);
 			console.warn(`Login attempt for non-existent user: ${normalizedEmail} from IP: ${clientIP}`);
-			
+
 			// Use consistent timing to prevent user enumeration
 			await new Promise(resolve => setTimeout(resolve, 100));
-			
+
 			return Response.json(
 				{ message: "Invalid email or password" },
 				{ status: 401 }
@@ -151,12 +151,12 @@ export async function POST(req: Request) {
 
 		// Prepare user object for response (exclude sensitive data)
 		const { password: _, ...safeUser } = dbUser;
-		
+
 		// Parse permissions if it's a string
 		let permissions: string[] = [];
 		if (safeUser.permissions) {
 			try {
-				permissions = typeof safeUser.permissions === 'string' 
+				permissions = typeof safeUser.permissions === 'string'
 					? JSON.parse(safeUser.permissions)
 					: safeUser.permissions;
 			} catch (error) {
@@ -177,7 +177,7 @@ export async function POST(req: Request) {
 
 	} catch (error) {
 		console.error("Sign-in API error:", error);
-		
+
 		// Don't expose internal errors to client
 		return Response.json(
 			{ message: "An internal server error occurred. Please try again." },

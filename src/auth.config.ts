@@ -62,7 +62,7 @@ export default {
 					if (!res.ok) {
 						const errorText = await res.text();
 						console.error(`API Sign-in failed: Status ${res.status}`, errorText);
-						
+
 						// Return more specific error messages
 						if (res.status === 401) {
 							throw new CredentialsSignin("Invalid email or password.");
@@ -107,26 +107,26 @@ export default {
 						console.error("Zod Validation Error:", error.errors);
 						throw new CredentialsSignin("Invalid email or password format.");
 					}
-					
+
 					// Handle timeout errors
-					if (error && typeof error === 'object' && 'name' in error && 
+					if (error && typeof error === 'object' && 'name' in error &&
 						(error.name === 'TimeoutError' || error.name === 'AbortError')) {
 						console.error("Login timeout:", error);
 						throw new CredentialsSignin("Login request timed out. Please try again.");
 					}
-					
+
 					// Handle network errors
 					if (error instanceof TypeError && error.message.includes('fetch')) {
 						console.error("Network error during login:", error);
 						throw new CredentialsSignin("Network error. Please check your connection.");
 					}
-					
+
 					// Handle errors thrown from the fetch/response check block
 					if (error instanceof CredentialsSignin) {
 						// Re-throw the specific error for NextAuth to handle
 						throw error;
 					}
-					
+
 					// Handle other unexpected errors
 					console.error("Unexpected authorize error:", error);
 					throw new CredentialsSignin("An unexpected error occurred during login.");

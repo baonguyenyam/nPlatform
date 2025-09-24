@@ -52,7 +52,7 @@ export const useAuth = () => {
 		try {
 			// Clear Redux state first
 			dispatch(removeActiveUser());
-			
+
 			// Then clear NextAuth session
 			await signOut({ redirect: false });
 		} catch (error) {
@@ -210,13 +210,13 @@ export const usePermissions = () => {
 		isAdmin: () => checkRole("ADMIN"),
 		isModerator: () => checkRole("MODERATOR"),
 		isUser: () => checkRole("USER"),
-		
+
 		// Resource-based permissions
 		canRead,
 		canWrite,
 		canDelete,
 		canManage,
-		
+
 		// Common permission combinations
 		canManageUsers: () => hasAdminAccess() || checkPermission("MANAGE_USERS"),
 		canManagePosts: () => hasAdminAccess() || checkPermission("MANAGE_POSTS"),
