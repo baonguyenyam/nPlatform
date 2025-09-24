@@ -6,7 +6,7 @@ import models from "@/models";
 // Rate limiting map - in production, use Redis or database
 const loginAttempts = new Map<string, { attempts: number; lastAttempt: number }>();
 const MAX_ATTEMPTS = 5;
-const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+const LOCKOUT_DURATION = 2 * 60 * 1000; // 2 minutes (shortened for testing)
 
 // Validation schema
 const SignInSchema = z.object({
@@ -22,6 +22,11 @@ const cleanupAttempts = () => {
 			loginAttempts.delete(key);
 		}
 	}
+};
+
+// Clear all rate limits (for debugging)
+const clearAllAttempts = () => {
+	loginAttempts.clear();
 };
 
 // Check if IP is rate limited
@@ -183,5 +188,26 @@ export async function POST(req: Request) {
 			{ message: "An internal server error occurred. Please try again." },
 			{ status: 500 }
 		);
+	}
+}
+
+// Debug endpoint to clear rate limits (development only)
+export async function DELETE(req: Request) {
+	if (process.env.NODE_ENV !== "development") {
+		return Response.json({ error: "Not available in production" }, { status: 404 });
+	}
+
+	try {
+		clearAllAttempts();
+		console.log("Rate limits cleared by debug endpoint");
+		return Response.json({ 
+			success: true, 
+			message: "All rate limits cleared successfully" 
+		});
+	} catch (error) {
+		console.error("Error clearing rate limits:", error);
+		return Response.json({ 
+			error: "Failed to clear rate limits" 
+		}, { status: 500 });
 	}
 }
