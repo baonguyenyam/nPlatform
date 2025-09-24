@@ -54,50 +54,82 @@ export default {
 							"Content-Type": "application/json",
 						},
 						body: JSON.stringify({ email, password }),
+						// Add timeout to prevent hanging requests
+						signal: AbortSignal.timeout(10000), // 10 second timeout
 					});
+
+					// Check if response is ok before parsing JSON
+					if (!res.ok) {
+						const errorText = await res.text();
+						console.error(`API Sign-in failed: Status ${res.status}`, errorText);
+						
+						// Return more specific error messages
+						if (res.status === 401) {
+							throw new CredentialsSignin("Invalid email or password.");
+						} else if (res.status === 429) {
+							throw new CredentialsSignin("Too many login attempts. Please try again later.");
+						} else {
+							throw new CredentialsSignin("Login service unavailable. Please try again.");
+						}
+					}
 
 					const responseBody = await res.json();
 
 					// 3. Check the response from your API
-					if (!res.ok || !responseBody.user) {
-						// Log the error message from the API if available
-						console.error(
-							"API Sign-in failed:",
-							responseBody.message || `Status code: ${res.status}`,
-						);
-						// Throwing an error here can provide feedback to the user on the login page
-						// You can throw a generic error or a specific one like CredentialsSignin
+					if (!responseBody.user) {
+						console.error("API Sign-in failed: No user in response", responseBody);
 						throw new CredentialsSignin(
-							responseBody.message ||
-								"Login failed. Please check your credentials.",
+							responseBody.message || "Login failed. Please check your credentials.",
 						);
-						// Alternatively, returning null will also indicate failure, but might provide less feedback
-						// return null;
 					}
 
-					// 4. Return the user object if authentication was successful
-					console.log("API Sign-in successful for:", responseBody.user.email);
-					return responseBody.user; // Return the user object nested under 'user'
+					// 4. Validate user data before returning
+					const user = responseBody.user;
+					if (!user.id || !user.email) {
+						console.error("API Sign-in failed: Invalid user data", user);
+						throw new CredentialsSignin("Invalid user data received.");
+					}
+
+					// 5. Return the user object if authentication was successful
+					console.log("API Sign-in successful for:", user.email);
+					return {
+						id: user.id,
+						email: user.email,
+						name: user.name || null,
+						role: user.role || "USER",
+						permissions: Array.isArray(user.permissions) ? user.permissions : [],
+						isTwoFactorEnabled: user.isTwoFactorEnabled || false,
+						image: user.avatar || null,
+					};
 				} catch (error) {
 					// Handle Zod validation errors
 					if (error instanceof ZodError) {
 						console.error("Zod Validation Error:", error.errors);
-						// You might want to throw a specific error message based on validation
 						throw new CredentialsSignin("Invalid email or password format.");
-						// return null;
 					}
+					
+					// Handle timeout errors
+					if (error && typeof error === 'object' && 'name' in error && 
+						(error.name === 'TimeoutError' || error.name === 'AbortError')) {
+						console.error("Login timeout:", error);
+						throw new CredentialsSignin("Login request timed out. Please try again.");
+					}
+					
+					// Handle network errors
+					if (error instanceof TypeError && error.message.includes('fetch')) {
+						console.error("Network error during login:", error);
+						throw new CredentialsSignin("Network error. Please check your connection.");
+					}
+					
 					// Handle errors thrown from the fetch/response check block
 					if (error instanceof CredentialsSignin) {
 						// Re-throw the specific error for NextAuth to handle
 						throw error;
 					}
+					
 					// Handle other unexpected errors
-					console.error("Authorize Error:", error);
-					// Throw a generic error for other cases
-					throw new CredentialsSignin(
-						"An unexpected error occurred during login.",
-					);
-					// return null;
+					console.error("Unexpected authorize error:", error);
+					throw new CredentialsSignin("An unexpected error occurred during login.");
 				}
 			},
 		}),

@@ -168,8 +168,28 @@ export const updateMulti = async (ids: string[], data: any) => {
 	}
 };
 
-// signIn
+// signIn - fetch user with password for authentication
 export const signIn = async (email: string) => {
-	// Use cached version for better performance
-	return getUserByEmail(email);
+	try {
+		// Fetch user with password for authentication - don't use cache for security
+		const user = await db.user.findUnique({
+			where: { email },
+			select: {
+				id: true,
+				email: true,
+				name: true,
+				password: true, // Include password for verification
+				role: true,
+				permissions: true,
+				emailVerified: true,
+				isTwoFactorEnabled: true,
+				published: true,
+				avatar: true,
+			},
+		});
+		return user;
+	} catch (error) {
+		console.error("SignIn query error:", error);
+		return null;
+	}
 };

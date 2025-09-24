@@ -2,10 +2,15 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 
 import { useAppDispatch, useAppSelector } from "@/store";
-import { type AuthUser, selectAuth, syncFromNextAuth } from "@/store/authSlice";
+import { 
+	selectAuth, 
+	setAuthLoading,
+	syncFromNextAuth, 
+	type AuthUser 
+} from "@/store/authSlice";
 
 /**
- * Custom hook để sync NextAuth session với Redux state
+ * Enhanced hook để sync NextAuth session với Redux state
  * Automatically syncs NextAuth session with Redux auth state
  */
 export const useAuthSync = () => {
@@ -14,7 +19,11 @@ export const useAuthSync = () => {
 	const authState = useAppSelector(selectAuth);
 
 	useEffect(() => {
-		if (status === "loading") return; // Still loading
+		// Set loading state
+		if (status === "loading") {
+			dispatch(setAuthLoading(true));
+			return;
+		}
 
 		const isLoggedIn = !!session?.user;
 		let user: AuthUser | null = null;
@@ -28,6 +37,9 @@ export const useAuthSync = () => {
 				avatar: session.user.image,
 				permissions: session.user.permissions || [],
 				isTwoFactorEnabled: session.user.isTwoFactorEnabled,
+				// These fields might not be available in middleware session
+				emailVerified: null,
+				createdAt: null,
 			};
 		}
 
@@ -39,7 +51,10 @@ export const useAuthSync = () => {
 			(isLoggedIn && authState.user?.role !== user?.role);
 
 		if (shouldSync) {
-			dispatch(syncFromNextAuth({ user, isLoggedIn }));
+			dispatch(syncFromNextAuth({ 
+				user, 
+				isLoggedIn 
+			}));
 		}
 	}, [
 		session,
@@ -51,10 +66,12 @@ export const useAuthSync = () => {
 		authState.user?.role,
 	]);
 
+	// Expose session state for debugging/monitoring
 	return {
 		session,
 		status,
 		authState,
 		isLoading: status === "loading" || authState.isLoading,
+		error: authState.error,
 	};
 };
