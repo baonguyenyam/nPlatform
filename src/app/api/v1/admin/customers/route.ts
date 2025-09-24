@@ -1,11 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { withCustomersPermission } from "@/lib/auth-middleware";
-import { ACTIONS, PERMISSION_LEVELS } from "@/lib/permissions";
+import { requireModerator } from "@/lib/auth-middleware";
 import models from "@/models";
 
 // get all customers
-export const GET = withCustomersPermission(ACTIONS.READ)(
+export const GET = requireModerator()(
 	async (req: NextRequest) => {
 		try {
 			// QUERY PARAMS

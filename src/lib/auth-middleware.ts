@@ -2,40 +2,26 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 
-import {
-	ACTIONS,
-	createPermissionChecker,
-	PERMISSION_LEVELS,
-	type PermissionLevel,
-	RESOURCES,
-	type UserPermissionContext,
-} from "./permissions";
-
 /**
- * Enhanced Authorization Middleware
- * Middleware nâng cao để kiểm tra phân quyền chi tiết
+ * Basic Authorization Middleware
+ * Simple middleware for basic authentication checks
  */
 
 interface AuthorizationOptions {
-	resource?: string;
-	action?: string;
-	level?: PermissionLevel;
-	requireOwnership?: boolean;
-	customCheck?: (
-		userContext: UserPermissionContext,
-		req: NextRequest,
-	) => boolean;
+	requireAdmin?: boolean;
+	requireModerator?: boolean;
+	customCheck?: (user: any, req: NextRequest) => boolean;
 }
 
 /**
- * Middleware chính để kiểm tra authorization
+ * Main authorization middleware
  */
 export async function withAuthorization(
 	req: NextRequest,
 	options: AuthorizationOptions = {},
 ): Promise<{ authorized: boolean; user?: any; error?: string }> {
 	try {
-		// Lấy session từ auth
+		// Get session from auth
 		const session = await auth();
 
 		if (!session?.user) {
@@ -44,68 +30,30 @@ export async function withAuthorization(
 
 		const { user } = session;
 
-		// Tạo user context
-		const userContext: UserPermissionContext = {
-			userId: user.id as string,
-			role: user.role as "ADMIN" | "MODERATOR" | "USER",
-			customPermissions: user.permissions
-				? parseCustomPermissions(user.permissions)
-				: undefined,
-		};
-
-		// Nếu không có options, chỉ cần authenticated
-		if (!options.resource && !options.action && !options.customCheck) {
-			return { authorized: true, user: userContext };
+		// If no options, just need authentication
+		if (!options.requireAdmin && !options.requireModerator && !options.customCheck) {
+			return { authorized: true, user };
 		}
 
-		const permissionChecker = createPermissionChecker(userContext);
+		// Check admin requirement
+		if (options.requireAdmin && user.role !== "ADMIN") {
+			return { authorized: false, error: "Admin access required" };
+		}
 
-		// Kiểm tra custom check trước
+		// Check moderator requirement
+		if (options.requireModerator && !["ADMIN", "MODERATOR"].includes(user.role as string)) {
+			return { authorized: false, error: "Moderator access required" };
+		}
+
+		// Check custom condition
 		if (options.customCheck) {
-			const customResult = options.customCheck(userContext, req);
+			const customResult = options.customCheck(user, req);
 			if (!customResult) {
 				return { authorized: false, error: "Custom authorization failed" };
 			}
 		}
 
-		// Kiểm tra resource permission
-		if (options.resource && options.action) {
-			const hasPermission = permissionChecker.hasPermission(
-				options.resource as any,
-				options.action as any,
-				options.level || PERMISSION_LEVELS.READ,
-			);
-
-			if (!hasPermission) {
-				return { authorized: false, error: "Insufficient permissions" };
-			}
-		}
-
-		// Kiểm tra ownership nếu cần
-		if (options.requireOwnership) {
-			const resourceId = extractResourceId(req);
-			if (resourceId) {
-				// Cần implement logic để lấy owner của resource
-				const resourceOwner = await getResourceOwner(
-					options.resource!,
-					resourceId,
-				);
-				if (
-					resourceOwner &&
-					!permissionChecker.hasOwnerPermission(
-						options.resource as any,
-						resourceOwner,
-					)
-				) {
-					// Nếu không phải owner, kiểm tra có quyền admin không
-					if (!permissionChecker.isAdmin()) {
-						return { authorized: false, error: "Resource access denied" };
-					}
-				}
-			}
-		}
-
-		return { authorized: true, user: userContext };
+		return { authorized: true, user };
 	} catch (error) {
 		console.error("Authorization middleware error:", error);
 		return { authorized: false, error: "Authorization error" };
@@ -113,7 +61,7 @@ export async function withAuthorization(
 }
 
 /**
- * HOC cho API routes với authorization
+ * HOC for API routes with authorization
  */
 export function withApiAuthorization(options: AuthorizationOptions = {}) {
 	return (handler: (req: NextRequest, context: any) => Promise<NextResponse>) =>
@@ -131,110 +79,19 @@ export function withApiAuthorization(options: AuthorizationOptions = {}) {
 				);
 			}
 
-			// Thêm user context vào request
-			(req as any).userContext = authResult.user;
+			// Add user to request
+			(req as any).user = authResult.user;
 
 			return handler(req, context);
 		};
 }
 
 /**
- * Middleware cho specific resources
- */
-export const withUsersPermission = (action: string, level?: PermissionLevel) =>
-	withApiAuthorization({
-		resource: RESOURCES.USERS,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withProductsPermission = (
-	action: string,
-	level?: PermissionLevel,
-) =>
-	withApiAuthorization({
-		resource: RESOURCES.PRODUCTS,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withOrdersPermission = (action: string, level?: PermissionLevel) =>
-	withApiAuthorization({
-		resource: RESOURCES.ORDERS,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withCategoriesPermission = (
-	action: string,
-	level?: PermissionLevel,
-) =>
-	withApiAuthorization({
-		resource: RESOURCES.CATEGORIES,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withPostsPermission = (action: string, level?: PermissionLevel) =>
-	withApiAuthorization({
-		resource: RESOURCES.POSTS,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withFilesPermission = (action: string, level?: PermissionLevel) =>
-	withApiAuthorization({
-		resource: RESOURCES.FILES,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withAttributesPermission = (
-	action: string,
-	level?: PermissionLevel,
-) =>
-	withApiAuthorization({
-		resource: RESOURCES.ATTRIBUTES,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withCustomersPermission = (
-	action: string,
-	level?: PermissionLevel,
-) =>
-	withApiAuthorization({
-		resource: RESOURCES.CUSTOMERS,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withVendorsPermission = (
-	action: string,
-	level?: PermissionLevel,
-) =>
-	withApiAuthorization({
-		resource: RESOURCES.VENDORS,
-		action,
-		level: level || PERMISSION_LEVELS.READ,
-	});
-
-export const withSettingsPermission = (
-	action: string,
-	level?: PermissionLevel,
-) =>
-	withApiAuthorization({
-		resource: RESOURCES.SETTINGS,
-		action,
-		level: level || PERMISSION_LEVELS.WRITE,
-	});
-
-/**
  * Admin only middleware
  */
 export const requireAdmin = () =>
 	withApiAuthorization({
-		customCheck: (userContext) => userContext.role === "ADMIN",
+		requireAdmin: true,
 	});
 
 /**
@@ -242,98 +99,5 @@ export const requireAdmin = () =>
  */
 export const requireModerator = () =>
 	withApiAuthorization({
-		customCheck: (userContext) =>
-			["ADMIN", "MODERATOR"].includes(userContext.role),
+		requireModerator: true,
 	});
-
-/**
- * Owner or Admin middleware
- */
-export const requireOwnerOrAdmin = (resourceType: string) =>
-	withApiAuthorization({
-		resource: resourceType,
-		requireOwnership: true,
-	});
-
-/**
- * Helper functions
- */
-function parseCustomPermissions(permissions: any): any[] {
-	try {
-		if (typeof permissions === "string") {
-			return JSON.parse(permissions);
-		}
-		return Array.isArray(permissions) ? permissions : [];
-	} catch {
-		return [];
-	}
-}
-
-function extractResourceId(req: NextRequest): string | null {
-	const pathname = req.nextUrl.pathname;
-	const segments = pathname.split("/");
-
-	// Tìm ID trong URL pattern /api/v1/admin/{resource}/{id}
-	const idIndex = segments.findIndex((segment) => segment === "admin") + 2;
-	return segments[idIndex] || null;
-}
-
-async function getResourceOwner(
-	resource: string,
-	resourceId: string,
-): Promise<string | null> {
-	// Implement logic để lấy owner của resource từ database
-	// Ví dụ:
-	try {
-		const { db } = await import("@/lib/db");
-
-		switch (resource) {
-			case RESOURCES.POSTS: {
-				const post = await db.post.findUnique({
-					where: { id: parseInt(resourceId) },
-					select: { userId: true },
-				});
-				return post?.userId || null;
-			}
-
-			case RESOURCES.FILES: {
-				const file = await db.file.findUnique({
-					where: { id: parseInt(resourceId) },
-					select: { userId: true },
-				});
-				return file?.userId || null;
-			}
-
-			case RESOURCES.ORDERS: {
-				const order = await db.order.findUnique({
-					where: { id: resourceId },
-					select: { user: { select: { id: true } } },
-				});
-				return order?.user?.[0]?.id || null;
-			}
-
-			default:
-				return null;
-		}
-	} catch (error) {
-		console.error("Error getting resource owner:", error);
-		return null;
-	}
-}
-
-/**
- * Utility cho client-side permission checking
- */
-export function createClientPermissionChecker(user: any) {
-	if (!user) return null;
-
-	const userContext: UserPermissionContext = {
-		userId: user.id,
-		role: user.role,
-		customPermissions: user.permissions
-			? parseCustomPermissions(user.permissions)
-			: undefined,
-	};
-
-	return createPermissionChecker(userContext);
-}

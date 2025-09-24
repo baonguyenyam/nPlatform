@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { withAttributesPermission } from "@/lib/auth-middleware";
+
+import { requireModerator } from "@/lib/auth-middleware";
 import models from "@/models";
 
 // get all attributes
@@ -77,6 +78,6 @@ async function DELETE_Handler(req: NextRequest) {
 	}
 }
 
-export const GET = withAttributesPermission("read")(GET_Handler);
-export const POST = withAttributesPermission("create")(POST_Handler);
-export const DELETE = withAttributesPermission("delete")(DELETE_Handler);
+export const GET = requireModerator()(GET_Handler);
+export const POST = requireModerator()(POST_Handler);
+export const DELETE = requireModerator()(DELETE_Handler);

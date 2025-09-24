@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 
-import { PermissionChecker } from "@/lib/admin-route-protection";
 import { meta } from "@/lib/appConst";
-import { ACTIONS, RESOURCES } from "@/lib/permissions";
 
 import Fetch from "./[page]/fetch";
 
@@ -13,7 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Index() {
-	await PermissionChecker.check(RESOURCES.SEARCH, ACTIONS.READ);
 
 	const breadcrumb = [
 		{

@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+
+import { requireModerator } from "@/lib/auth-middleware";
 import {
 	authError,
 	createPagination,
@@ -7,12 +9,10 @@ import {
 	parseQueryParams,
 	successResponse,
 } from "@/lib/api-helpers";
-import { withUsersPermission } from "@/lib/auth-middleware";
-import { ACTIONS, PERMISSION_LEVELS } from "@/lib/permissions";
 import models from "@/models";
 
 // get all users
-export const GET = withUsersPermission(ACTIONS.READ)(
+export const GET = requireModerator()(
 	async (req: NextRequest) => {
 		try {
 			const url = new URL(req.url);

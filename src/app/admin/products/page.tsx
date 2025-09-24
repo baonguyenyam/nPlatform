@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { PermissionChecker } from "@/lib/admin-route-protection";
 import { meta } from "@/lib/appConst";
-import { ACTIONS, RESOURCES } from "@/lib/permissions";
 
 import Fetch from "./[page]/fetch";
 
@@ -20,8 +18,6 @@ export default async function Index() {
 	if (!session?.user) {
 		redirect("/authentication/login");
 	}
-
-	await PermissionChecker.check(RESOURCES.PRODUCTS, ACTIONS.READ);
 
 	const breadcrumb = [
 		{

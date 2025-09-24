@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+
+import { requireModerator } from "@/lib/auth-middleware";
 import { auth } from "@/auth";
 import { appState } from "@/lib/appConst";
-import { withFilesPermission } from "@/lib/auth-middleware";
 
 import * as actions from "./actions";
 
@@ -137,4 +138,4 @@ async function POST_Handler(req: NextRequest) {
 	}
 }
 
-export const POST = withFilesPermission("create")(POST_Handler);
+export const POST = requireModerator()(POST_Handler);

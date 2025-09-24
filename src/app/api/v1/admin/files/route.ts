@@ -1,11 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { withFilesPermission } from "@/lib/auth-middleware";
-import { ACTIONS, PERMISSION_LEVELS } from "@/lib/permissions";
+import { requireModerator } from "@/lib/auth-middleware";
 import models from "@/models";
 
 // get all Files
-export const GET = withFilesPermission(ACTIONS.READ)(
+export const GET = requireModerator()(
 	async (req: NextRequest) => {
 		try {
 			// QUERY PARAMS
@@ -44,10 +43,7 @@ export const GET = withFilesPermission(ACTIONS.READ)(
 );
 
 // Create Files
-export const POST = withFilesPermission(
-	ACTIONS.CREATE,
-	PERMISSION_LEVELS.WRITE,
-)(async (req: NextRequest) => {
+export const POST = requireModerator()(async (req: NextRequest) => {
 	try {
 		const body = await req.json();
 		const db = await models.File.createFile(body);
@@ -70,10 +66,7 @@ export const POST = withFilesPermission(
 });
 
 // DELETE Multiple
-export const DELETE = withFilesPermission(
-	ACTIONS.DELETE,
-	PERMISSION_LEVELS.WRITE,
-)(async (req: NextRequest) => {
+export const DELETE = requireModerator()(async (req: NextRequest) => {
 	try {
 		const body = await req.json();
 		const db = await models.File.deleteMulti(body);

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { withSettingsPermission } from "@/lib/auth-middleware";
-import { ACTIONS, PERMISSION_LEVELS } from "@/lib/permissions";
+
+import { requireModerator } from "@/lib/auth-middleware";
 import models from "@/models";
 
 // get all Settings (Admin only)

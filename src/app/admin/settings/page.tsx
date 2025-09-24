@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 
 import AppTitle from "@/components/AppTitle";
-import { PermissionChecker } from "@/lib/admin-route-protection";
 import { meta } from "@/lib/appConst";
-import { ACTIONS, PERMISSION_LEVELS, RESOURCES } from "@/lib/permissions";
 
 import FormEdit from "./edit";
 
@@ -14,7 +12,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Index() {
-	await PermissionChecker.check(
 		RESOURCES.SETTINGS,
 		ACTIONS.READ,
 		PERMISSION_LEVELS.ADMIN,
