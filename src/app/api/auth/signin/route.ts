@@ -200,14 +200,14 @@ export async function DELETE(req: Request) {
 	try {
 		clearAllAttempts();
 		console.log("Rate limits cleared by debug endpoint");
-		return Response.json({ 
-			success: true, 
-			message: "All rate limits cleared successfully" 
+		return Response.json({
+			success: true,
+			message: "All rate limits cleared successfully"
 		});
 	} catch (error) {
 		console.error("Error clearing rate limits:", error);
-		return Response.json({ 
-			error: "Failed to clear rate limits" 
+		return Response.json({
+			error: "Failed to clear rate limits"
 		}, { status: 500 });
 	}
 }
