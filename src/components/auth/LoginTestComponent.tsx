@@ -67,7 +67,7 @@ export default function LoginTestComponent() {
 							<p className="font-semibold">{user?.name || user?.email}</p>
 							<p className="text-sm">Role: {user?.role}</p>
 						</div>
-						
+
 						<Button onClick={handleLogout} disabled={loading} className="w-full">
 							{loading ? "Logging out..." : "Logout"}
 						</Button>
