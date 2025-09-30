@@ -83,7 +83,7 @@ function FetchComponent(props: any) {
 
 	const fetchUserData = useCallback(async () => {
 		if (!email) return;
-		
+
 		const getUserData = cache(async () => {
 			try {
 				const res = await actions.getAll(email);
@@ -93,10 +93,10 @@ function FetchComponent(props: any) {
 				return { success: "error", message: "Failed to load user data" };
 			}
 		});
-		
+
 		setLoading(true);
 		const result = await getUserData();
-		
+
 		if (result.success === "success") {
 			setDb(result.data);
 			form.reset({
@@ -113,7 +113,7 @@ function FetchComponent(props: any) {
 		} else {
 			toast.error(result.message);
 		}
-		
+
 		setLoading(false);
 	}, [email, form]);
 
@@ -172,149 +172,149 @@ function FetchComponent(props: any) {
 				<div className="mx-auto max-w-4xl p-5 space-y-6">
 					{/* User Info Header */}
 					<UserInfoHeader userData={db} />			{/* Profile Form */}
-			<div className="bg-card p-6 rounded-lg border">
-				<h3 className="text-lg font-medium mb-4">Profile Information</h3>
-				<Form {...form}>
-					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<FormField
-								control={form.control}
-								name="first_name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>First Name</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter your first name" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="last_name"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Last Name</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter your last name" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+					<div className="bg-card p-6 rounded-lg border">
+						<h3 className="text-lg font-medium mb-4">Profile Information</h3>
+						<Form {...form}>
+							<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+									<FormField
+										control={form.control}
+										name="first_name"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>First Name</FormLabel>
+												<FormControl>
+													<Input placeholder="Enter your first name" {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="last_name"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Last Name</FormLabel>
+												<FormControl>
+													<Input placeholder="Enter your last name" {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 
-						<FormField
-							control={form.control}
-							name="username"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Username</FormLabel>
-									<FormControl>
-										<Input placeholder="Enter your username" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+								<FormField
+									control={form.control}
+									name="username"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Username</FormLabel>
+											<FormControl>
+												<Input placeholder="Enter your username" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
-						<FormField
-							control={form.control}
-							name="phone"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Phone Number</FormLabel>
-									<FormControl>
-										<Input placeholder="Enter your phone number" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+								<FormField
+									control={form.control}
+									name="phone"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Phone Number</FormLabel>
+											<FormControl>
+												<Input placeholder="Enter your phone number" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
-						<FormField
-							control={form.control}
-							name="address"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Address</FormLabel>
-									<FormControl>
-										<Input placeholder="Enter your address" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+								<FormField
+									control={form.control}
+									name="address"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Address</FormLabel>
+											<FormControl>
+												<Input placeholder="Enter your address" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
-						<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-							<FormField
-								control={form.control}
-								name="city"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>City</FormLabel>
-										<FormControl>
-											<Input placeholder="City" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="state"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>State</FormLabel>
-										<FormControl>
-											<Input placeholder="State" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="zip"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>ZIP Code</FormLabel>
-										<FormControl>
-											<Input placeholder="ZIP" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+								<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+									<FormField
+										control={form.control}
+										name="city"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>City</FormLabel>
+												<FormControl>
+													<Input placeholder="City" {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="state"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>State</FormLabel>
+												<FormControl>
+													<Input placeholder="State" {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="zip"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>ZIP Code</FormLabel>
+												<FormControl>
+													<Input placeholder="ZIP" {...field} />
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
 
-							<FormField
-								control={form.control}
-								name="country"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Country</FormLabel>
-										<FormControl>
-											<Input placeholder="Enter your country" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+								<FormField
+									control={form.control}
+									name="country"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Country</FormLabel>
+											<FormControl>
+												<Input placeholder="Enter your country" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
-							<div className="flex justify-end pt-4">
-								<Button type="submit" disabled={loading}>
-									{loading ? "Updating..." : "Update Profile"}
-								</Button>
-							</div>
-						</form>
-					</Form>
+								<div className="flex justify-end pt-4">
+									<Button type="submit" disabled={loading}>
+										{loading ? "Updating..." : "Update Profile"}
+									</Button>
+								</div>
+							</form>
+						</Form>
+					</div>
 				</div>
-			</div>
-		)}
-	</>
-);
+			)}
+		</>
+	);
 }
 
 // Export memoized component for better performance
