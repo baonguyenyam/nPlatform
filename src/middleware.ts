@@ -87,18 +87,17 @@ export default auth(async (req) => {
 	const { nextUrl } = req;
 	const isLoggedIn = !!req.auth;
 
-	// Enhanced admin route protection with permissions
+	// Basic admin authentication check
 	if (
 		nextUrl.pathname.startsWith("/admin") &&
 		nextUrl.pathname !== "/admin" &&
 		nextUrl.pathname !== "/admin/deny"
 	) {
 		const userRole = req.auth?.user?.role;
-		const isAllowed = checkAdminRoutePermission(nextUrl.pathname, userRole);
+		const isAllowed = userRole === "ADMIN" || userRole === "MODERATOR";
 
 		if (!isAllowed) {
-			const redirectUrl = getUnauthorizedRedirectUrl(nextUrl.pathname);
-			return NextResponse.redirect(new URL(redirectUrl, nextUrl));
+			return NextResponse.redirect(new URL("/admin/deny", nextUrl));
 		}
 	}
 
